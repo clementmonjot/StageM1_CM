@@ -5,7 +5,17 @@ getwd()
 setwd("./rawdata/")
 
 # read arg
+args = commandArgs(trailingOnly = TRUE)
 
+input <- args [1]
+control_sample <- args[2]
+target_gene <- args[3]
+length(args)
+if (length(args) > 3 ) {pattern_i <- args[4]}
+#input <- "Stimulation_3pRNA.csv"
+#control_sample <- "Control"
+#target_gene <- "IFNB"
+#pattern_i <- if (length(args))
 
 
 # Libraries
@@ -32,8 +42,8 @@ theme_unique_art <- function (base_size = 18, base_family = "") {
 }
 
 # Options utilisation
-control_sample <- "Control"
-target_gene <- "NP"  # Modifier si besoin
+# control_sample <- "Control" #cm210825
+#target_gene <- "NP"  # #cm210825
 #targets_to_exclude <- c("5h si6.1", "5h si6.2", "8h si6.1", "8h si6.2", "12h si6.1", "12h si6.2", "24h si6.1", "24h si6.2")
 #targets_to_exclude <- c("Negative 8.1", "Negative 8.2", "RIG-I Control", "RIG-I 8.1", "RIG-I 8.2")
 #targets_to_exclude <- c("Negative 8.1", "Negative 8.2", "cGAS Control", "cGAS 8.1", "cGAS 8.2")
@@ -41,15 +51,15 @@ targets_to_exclude <- c("")
 
 
 ## Importer données et nettoyage pour analyse
-
+getwd()
 # lecture CSV (csv2 car format numbers français (,))
-tableau <- read.csv2("Infection.csv")
+tableau <- read.csv2(input) #cm210825
 
 # On garde GAPDH (ménage) et gene target (variable optionnelle)
 tableau <- tableau %>% filter(X %in% c("Target Name", "GAPDH", target_gene))
 colnames(tableau) <- tableau[1, ]
 tableau <- tableau %>% filter(Well != "Well")
-tableau <- tableau %>% filter(grepl("", `Sample Name`))
+if (length(args) > 3 ) {tableau <- tableau %>% filter(grepl(pattern_i, `Sample Name`))}
 
 # Sélection de colonnes à analyser
 tableauCT <- tableau %>% select("Sample Name", "Target Name", "Cт")
@@ -209,7 +219,7 @@ tableauPlot <- tableauPlot[!is.na(tableauPlot$mean), ]
 }
 
 
-#ggsave("Timedep 12h PARP8.png", plot = p, width = 8, height = 6, dpi = 600)
+ggsave(paste0("../result/Figure_",input,"_",target_gene,".png"), plot = p, width = 8, height = 6, dpi = 600)
 
 
 
